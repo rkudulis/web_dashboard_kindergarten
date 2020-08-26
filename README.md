@@ -7,7 +7,7 @@
 Vizualizacijos pasiekiamos: 
 https://dashboard-kindergarten.herokuapp.com/
 
-<img alt="screenshot" src="https://github.com/rkudulis/web_dashboard_kindergarten/screenshot.png">
+<img alt="screenshot" src="https://raw.githubusercontent.com/rkudulis/web_dashboard_kindergarten/master/screenshot.png">
 
 ---
 
