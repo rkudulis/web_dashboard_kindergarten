@@ -23,7 +23,7 @@ def return_figures():
 
     # first chart plots arable land from 1990 to 2015 in top 10 economies 
     # as a line chart
-    pending = pd.read_csv("https://raw.githubusercontent.com/vilnius/darzeliai/master/data/laukianciuju_eileje_ataskaita.csv", sep=";", parse_dates=[3, 5, 6])
+    pending = pd.read_csv("data/laukianciuju_eileje_ataskaita.csv", sep=";", parse_dates=[3, 5, 6])
     pending.dropna(how='all', subset=['1 pasirinktas darželis', '2 pasirinktas darželis', '3 pasirinktas darželis', '4 pasirinktas darželis', '5 pasirinktas darželis'], inplace=True)
     pending = pending[pending['Lankymo data'].dt.year >= 2020]
     pending.loc[pending['Vaiko seniunija']=="-"] = np.nan
@@ -82,7 +82,7 @@ def return_figures():
                     )
     
 # Indicator
-    current = pd.read_csv("https://raw.githubusercontent.com/vilnius/darzeliai/master/data/lankanciu_vaiku_ataskaita_pagal_grupes.csv", sep=";",
+    current = pd.read_csv("data/lankanciu_vaiku_ataskaita_pagal_grupes.csv", sep=";",
                      parse_dates=[4,5])
     current['Vaiko priėmimo į grupę data'] = pd.to_datetime(current['Vaiko priėmimo į grupę data'], errors='coerce')
     current['YEAR'] = current['Vaiko priėmimo į grupę data'].dt.year

@@ -1,1 +1,1 @@
-from dashboard import app
+from web_app import app
