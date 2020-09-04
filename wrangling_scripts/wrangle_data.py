@@ -24,16 +24,17 @@ def return_figures():
     # first chart plots arable land from 1990 to 2015 in top 10 economies 
     # as a line chart
     PENDING_PATH = r"https://raw.githubusercontent.com/vilnius/darzeliai/master/data/laukianciuju_eileje_ataskaita.csv"
-    PENDING_PATH = "data/laukianciuju_eileje_ataskaita.csv"
+    # PENDING_PATH = "data/laukianciuju_eileje_ataskaita.csv"
     pending = pd.read_csv(PENDING_PATH, sep=";", parse_dates=[3, 5, 6])
     pending.dropna(how='all', subset=['1 pasirinktas darželis', '2 pasirinktas darželis', '3 pasirinktas darželis', '4 pasirinktas darželis', '5 pasirinktas darželis'], inplace=True)
     pending = pending[pending['Lankymo data'].dt.year >= 2020]
     pending.loc[pending['Vaiko seniunija']=="-"] = np.nan
     pending.loc[pending['Vaiko seniunija']=='visos'] = np.nan
 
- 
-    by_year_and_district = pending.groupby(['Lankymo data','Vaiko seniunija'], as_index=False).agg({"Nr." : 'count'}).sort_values("Nr.", 0, False)
+    
+    by_year_and_district = pending.groupby(['Lankymo data','Vaiko seniunija'], as_index=False).agg({"Nr." : 'count'})
     by_year_and_district['Lankymo data'] = by_year_and_district['Lankymo data'].dt.year
+    
     sen = {
     'Šnipiškių':'Šnipiškės', 'Grigiškių':'Grigiškės', 'Naujamiesčio':'Naujamiestis', 'Žvėryno':'Žvėrynas', 'Senamiesčio':'Senamiestis',
        'Pašilaičių':'Pašilaičiai', 'Verkių':'Verkiai', 'Naujosios Vilnios':'Naujoji Vilnia', 'Pilaitės':'Pilaitė', 'Lazdynų':'Lazdynai',
@@ -42,24 +43,25 @@ def return_figures():
        'Viršuliškių':'Viršuliškės', 'Rasų':'Rasos', 'Vilkpėdės':'Vilkpėdė'
        }
     by_year_and_district['Vaiko seniunija'] = by_year_and_district['Vaiko seniunija'].map(sen)
-
+    
+    by_year_and_district = pd.pivot_table(by_year_and_district, index='Vaiko seniunija', columns='Lankymo data', values='Nr.', aggfunc='sum')
+    by_year_and_district.sort_values(2020, 0, False, inplace=True)
+    
     graph_one = []
-    for yr in by_year_and_district['Lankymo data'].unique():    
+    
+    for yr in by_year_and_district.columns:
         graph_one.append(
             go.Bar(
             name=str(yr),
-            x = by_year_and_district.query("`Lankymo data`==@yr")['Vaiko seniunija'],
-            y = by_year_and_district.query("`Lankymo data`==@yr")['Nr.'],
-      )
-    )
+            x = by_year_and_district.index,
+            y = by_year_and_district[yr]
+            )
+        )
 
     layout_one = dict(xaxis = dict(title = '', tickangle=-45),
                 yaxis = dict(title = ''),
                 barmode='stack',
-                title = dict(text='Prašymų skaičius pagal metus ir seniūnijas', xanchor='center', yanchor='top'),
-                # xaxis_tickfont_size=14,
-                automargin=True
-                # margin=dict(l=30, r=0, t=0, b=100)
+                title = dict(text='Pateiktų prašymų skaičius<br>pagal metus ir seniūnijas', xanchor='center', yanchor='top')
                 )
     
 
@@ -70,22 +72,56 @@ def return_figures():
          
     graph_two = []
 
-    by_district = by_year_and_district.groupby('Vaiko seniunija', as_index=False)['Nr.'].sum()
-
-    graph_two.append(
-           go.Choroplethmapbox(geojson=counties, featureidkey='properties.SENIUNIJA', locations=by_district['Vaiko seniunija'],
-                               z=by_district['Nr.'], colorscale="Magenta", zmin=by_district['Nr.'].min(), zmax=by_district['Nr.'].max(),
-                               marker_opacity=0.5, marker_line_width=0, )
-    )
-    layout_two = dict(mapbox=dict(center=dict(lat=54.687773, lon=25.269452), zoom=9, style='carto-positron'), height=600,
-                    #   automargin=True
-                    #   margin=dict(l=0, r=0, t=0, b=100)
-                    title = dict(text="Interaktyvus prašymų žemėlapis pagal seniūnijas")
-                    )
+    visible = [True] + [False] * (len(by_year_and_district.columns) - 1)
+    for i, col in enumerate(by_year_and_district.columns):
+        graph_two.append(
+           go.Choroplethmapbox(geojson=counties, featureidkey='properties.SENIUNIJA',
+                               locations=by_year_and_district.index,
+                               z=by_year_and_district[col], colorscale="Magenta",
+                               zmin=by_year_and_district[col].min(),
+                               zmax=by_year_and_district[col].max(),
+                               marker_opacity=0.5, marker_line_width=0,
+                               name=f"Metai<br>{col}",
+                               visible=visible[i])
+        )
+    dropdown_list = []
+    
+    for col in by_year_and_district.columns:
+        dropdown_list.append(
+            dict(
+                args=['visible', (by_year_and_district.columns==col).tolist()],
+                label=col,
+                method='restyle'
+            )
+        )
+    
+    layout_two = dict(
+        updatemenus=[
+            dict(
+                dict(
+                    buttons=list(dropdown_list)
+                ),
+            type='buttons',
+            direction="right",
+            xanchor='left',
+            pad={"r": 10, "t": 10},
+            showactive=True,
+            x=0.08 ,
+            y=1.12,
+        )],
+        annotations=[
+            dict(text="Metai:", x=0, xref="paper", y=1.08, yref="paper",
+                             align="left", showarrow=False)],
+        mapbox=dict(center=dict(lat=54.687773, lon=25.269452),zoom=9,
+                    style='carto-positron'),
+        height=600,
+        title = dict(text="Interaktyvus prašymų žemėlapis pagal metus seniūnijas")
+        )
+    
     
 # Indicator
     CURRENT_PATH = r"https://raw.githubusercontent.com/vilnius/darzeliai/master/data/lankanciu_vaiku_ataskaita_pagal_grupes.csv"
-    CURRENT_PATH = "data/lankanciu_vaiku_ataskaita_pagal_grupes.csv"
+    # CURRENT_PATH = "data/lankanciu_vaiku_ataskaita_pagal_grupes.csv"
     current = pd.read_csv(CURRENT_PATH, sep=";",
                      parse_dates=[4,5])
     current['Vaiko priėmimo į grupę data'] = pd.to_datetime(current['Vaiko priėmimo į grupę data'], errors='coerce')
@@ -96,13 +132,13 @@ def return_figures():
         go.Indicator(
             mode = "number+delta",
             value = indicator_data.loc[2020]['Nr.'],
-            title = {"text": "Lankančiųjų skaičius 2020 m.<br>"},
+            title = {"text": 'Priimta vaikų 2020 m.'},
             delta = dict(reference=indicator_data.loc[2019]['Nr.'], relative=True),
             domain = dict(x=[0, 1], y=[0, 1])
             )
     )
 
-    layout_three = dict()#width=200, height=200)
+    layout_three = dict()
 
     # append all charts to the figures list
     figures = []
