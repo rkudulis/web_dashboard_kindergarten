@@ -24,7 +24,7 @@ def return_figures():
     # first chart plots arable land from 1990 to 2015 in top 10 economies 
     # as a line chart
     PENDING_PATH = r"https://raw.githubusercontent.com/vilnius/darzeliai/master/data/laukianciuju_eileje_ataskaita.csv"
-    # PENDING_PATH = "data/laukianciuju_eileje_ataskaita.csv"
+    PENDING_PATH = "data/laukianciuju_eileje_ataskaita.csv"
     pending = pd.read_csv(PENDING_PATH, sep=";", parse_dates=[3, 5, 6])
     pending.dropna(how='all', subset=['1 pasirinktas darželis', '2 pasirinktas darželis', '3 pasirinktas darželis', '4 pasirinktas darželis', '5 pasirinktas darželis'], inplace=True)
     pending = pending[pending['Lankymo data'].dt.year >= 2020]
@@ -77,7 +77,7 @@ def return_figures():
                                z=by_district['Nr.'], colorscale="Magenta", zmin=by_district['Nr.'].min(), zmax=by_district['Nr.'].max(),
                                marker_opacity=0.5, marker_line_width=0, )
     )
-    layout_two = dict(mapbox=dict(center=dict(lat=54.687773, lon=25.269452), zoom=9, style='carto-positron'), width=800, height=900, 
+    layout_two = dict(mapbox=dict(center=dict(lat=54.687773, lon=25.269452), zoom=9, style='carto-positron'), height=600,
                     #   automargin=True
                     #   margin=dict(l=0, r=0, t=0, b=100)
                     title = dict(text="Interaktyvus prašymų žemėlapis pagal seniūnijas")
@@ -85,7 +85,7 @@ def return_figures():
     
 # Indicator
     CURRENT_PATH = r"https://raw.githubusercontent.com/vilnius/darzeliai/master/data/lankanciu_vaiku_ataskaita_pagal_grupes.csv"
-    # CURRENT_PATH = "data/lankanciu_vaiku_ataskaita_pagal_grupes.csv"
+    CURRENT_PATH = "data/lankanciu_vaiku_ataskaita_pagal_grupes.csv"
     current = pd.read_csv(CURRENT_PATH, sep=";",
                      parse_dates=[4,5])
     current['Vaiko priėmimo į grupę data'] = pd.to_datetime(current['Vaiko priėmimo į grupę data'], errors='coerce')
@@ -96,7 +96,7 @@ def return_figures():
         go.Indicator(
             mode = "number+delta",
             value = indicator_data.loc[2020]['Nr.'],
-            title = {"text": "Lankančiųjų skaičius 2020 m.<br><span style='font-size:0.8em;color:gray'>* Grupių formavimas nuo rugsėjo mėn.</span><br>"},
+            title = {"text": "Lankančiųjų skaičius 2020 m.<br>"},
             delta = dict(reference=indicator_data.loc[2019]['Nr.'], relative=True),
             domain = dict(x=[0, 1], y=[0, 1])
             )
