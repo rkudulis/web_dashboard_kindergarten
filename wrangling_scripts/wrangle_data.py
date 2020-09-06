@@ -23,9 +23,12 @@ def return_figures():
 
     # first chart plots arable land from 1990 to 2015 in top 10 economies 
     # as a line chart
-    PENDING_PATH = r"https://raw.githubusercontent.com/vilnius/darzeliai/master/data/laukianciuju_eileje_ataskaita.csv"
-    # PENDING_PATH = "data/laukianciuju_eileje_ataskaita.csv"
-    pending = pd.read_csv(PENDING_PATH, sep=";", parse_dates=[3, 5, 6])
+    PENDING_PATH_0 = r"https://raw.githubusercontent.com/vilnius/darzeliai/master/data/laukianciuju_eileje_ataskaita.csv"
+    PENDING_PATH_1 = "data/laukianciuju_eileje_ataskaita.csv"
+    try:
+        pending = pd.read_csv(PENDING_PATH_0, sep=";", parse_dates=[3, 5, 6])
+    except:
+        pending = pd.read_csv(PENDING_PATH_1, sep=";", parse_dates=[3, 5, 6])
     pending.dropna(how='all', subset=['1 pasirinktas darželis', '2 pasirinktas darželis', '3 pasirinktas darželis', '4 pasirinktas darželis', '5 pasirinktas darželis'], inplace=True)
     pending = pending[pending['Lankymo data'].dt.year >= 2020]
     pending.loc[pending['Vaiko seniunija']=="-"] = np.nan
@@ -65,11 +68,16 @@ def return_figures():
                 )
     
 
-# second chart plots ararble land for 2015 as a bar chart 
+# second chart plots ararble land for 2015 as a bar chart
+    map_data_path_0 = r'http://gis-vplanas.opendata.arcgis.com/datasets/6d5088b44dba4643a6611455d5352268_1.geojson'
+    map_data_path_1 = r"data/Vilniaus_miesto_ribos.geojson"
+    try:
+        with urlopen(map_data_path_0) as response:
+            counties = json.load(response)
+    except:
+        with open(map_data_path_1) as file:
+            counties = json.load(file)
 
-    with urlopen('http://gis-vplanas.opendata.arcgis.com/datasets/6d5088b44dba4643a6611455d5352268_1.geojson') as response:
-        counties = json.load(response)
-         
     graph_two = []
 
     visible = [True] + [False] * (len(by_year_and_district.columns) - 1)
@@ -120,10 +128,12 @@ def return_figures():
     
     
 # Indicator
-    CURRENT_PATH = r"https://raw.githubusercontent.com/vilnius/darzeliai/master/data/lankanciu_vaiku_ataskaita_pagal_grupes.csv"
-    # CURRENT_PATH = "data/lankanciu_vaiku_ataskaita_pagal_grupes.csv"
-    current = pd.read_csv(CURRENT_PATH, sep=";",
-                     parse_dates=[4,5])
+    CURRENT_PATH_0 = r"https://raw.githubusercontent.com/vilnius/darzeliai/master/data/lankanciu_vaiku_ataskaita_pagal_grupes.csv"
+    CURRENT_PATH_1 = "data/lankanciu_vaiku_ataskaita_pagal_grupes.csv"
+    try:
+        current = pd.read_csv(CURRENT_PATH_0, sep=";", parse_dates=[4,5])
+    except:
+        current = pd.read_csv(CURRENT_PATH_1, sep=";", parse_dates=[4,5])
     current['Vaiko priėmimo į grupę data'] = pd.to_datetime(current['Vaiko priėmimo į grupę data'], errors='coerce')
     current['YEAR'] = current['Vaiko priėmimo į grupę data'].dt.year
     indicator_data = current.groupby('YEAR').agg({"Nr." : 'count'})
