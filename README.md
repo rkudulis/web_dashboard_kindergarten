@@ -8,7 +8,7 @@ Vizualizacijos pasiekiamos:
 https://dashboard-kindergarten.herokuapp.com/  
 P.S. Puslapis gali krautis apie 20s, nes Heroku užmigdo puslapį po 1h neaktyvumo.
 
-<img alt="screenshot" src="https://raw.githubusercontent.com/rkudulis/web_dashboard_kindergarten/master/screenshot.png">
+<img alt="screenshot" src="https://raw.githubusercontent.com/rkudulis/web_dashboard_kindergarten/master/screenshots.png">
 
 ---
 
